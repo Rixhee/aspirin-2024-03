@@ -5,6 +5,8 @@ use std::cmp::Ordering;
 use std::io;
 
 /// Returns an integer from user input and panics if the input is invalid
+/// # Returns
+/// input(i32) - The user input as an integer
 fn get_input() -> i32 {
     println!("Please input your guess");
 
@@ -22,6 +24,8 @@ fn get_input() -> i32 {
 }
 
 /// The main function that runs the guessing game
+/// # Returns
+/// None
 fn main() {
     println!("Guess the number!");
 
