@@ -72,7 +72,7 @@ fn get_average_gpa() -> f32 {
         }
     }
 
-    return sum / counter as f32;
+    sum / counter as f32
 }
 
 /// Returns the number of students in a class year who have a gpa greater
@@ -95,7 +95,7 @@ fn get_num_excel_students_for_class(class_year: ClassYear) -> u32 {
         }
     }
 
-    return counter;
+    counter
 }
 
 /// Returns the class year with the most excel students
@@ -123,7 +123,7 @@ fn get_best_class() -> ClassYear {
         }
     }
 
-    return best_class;
+    best_class
 }
 
 // Do not modify below here

@@ -1,12 +1,12 @@
-/// A robust calculator that can perform AND, OR, and XOR operations
+/// A robust calculator that can perform And, Or, and Xor operations
 /// on numbers in binary, decimal, and hexadecimal formats
 use std::io;
 
 #[derive(Debug, PartialEq)]
 enum Operators {
-    AND,
-    OR,
-    XOR,
+    And,
+    Or,
+    Xor,
 }
 
 /// Gets user input and returns it as a tuple of strings
@@ -29,7 +29,7 @@ fn get_input() -> (String, String, String) {
         .read_line(&mut operator)
         .expect("Failed to read operator");
 
-    return (first_number, second_number, operator);
+    (first_number, second_number, operator)
 }
 
 /// Parses a number from a string in binary, decimal, and hexadecimal formats
@@ -43,12 +43,12 @@ fn get_input() -> (String, String, String) {
 ///
 /// u32 - The parsed number
 fn parse_number(number: &str) -> u32 {
-    if number.starts_with("0b") {
-        return u32::from_str_radix(&number[2..], 2).unwrap();
-    } else if number.starts_with("0x") {
-        return u32::from_str_radix(&number[2..], 16).unwrap();
+    if let Some(stripped) = number.strip_prefix("0b") {
+        u32::from_str_radix(stripped, 2).unwrap()
+    } else if let Some(stripped) = number.strip_prefix("0x") {
+        u32::from_str_radix(stripped, 16).unwrap()
     } else {
-        return number.parse::<u32>().unwrap();
+        number.parse::<u32>().unwrap()
     }
 }
 
@@ -64,9 +64,9 @@ fn parse_number(number: &str) -> u32 {
 /// Result<Operators, String> - The parsed operator
 fn parse_operation(operator: &str) -> Result<Operators, String> {
     match operator {
-        "&" | "and" | "AND" => Ok(Operators::AND),
-        "|" | "or" | "OR" => Ok(Operators::OR),
-        "^" | "xor" | "XOR" => Ok(Operators::XOR),
+        "&" | "and" | "AND" => Ok(Operators::And),
+        "|" | "or" | "OR" => Ok(Operators::Or),
+        "^" | "xor" | "XOR" => Ok(Operators::Xor),
         _ => Err("Could not recognize the operator".to_owned()),
     }
 }
@@ -85,9 +85,9 @@ fn parse_operation(operator: &str) -> Result<Operators, String> {
 /// u32 - The result of the operation
 fn calculator(first_number: u32, second_number: u32, operator: Operators) -> u32 {
     match operator {
-        Operators::AND => first_number & second_number,
-        Operators::OR => first_number | second_number,
-        Operators::XOR => first_number ^ second_number,
+        Operators::And => first_number & second_number,
+        Operators::Or => first_number | second_number,
+        Operators::Xor => first_number ^ second_number,
     }
 }
 
@@ -105,17 +105,17 @@ fn calculator(first_number: u32, second_number: u32, operator: Operators) -> u32
 /// None
 fn print_output(first_number: u32, second_number: u32, operator: Operators, result: u32) {
     match operator {
-        Operators::AND => println!(
-            "The result of {} {} {} is {}",
-            first_number, "&", second_number, result
+        Operators::And => println!(
+            "The result of {} & {} is {}",
+            first_number, second_number, result
         ),
-        Operators::OR => println!(
-            "The result of {} {} {} is {}",
-            first_number, "|", second_number, result
+        Operators::Or => println!(
+            "The result of {} | {} is {}",
+            first_number, second_number, result
         ),
-        Operators::XOR => println!(
-            "The result of {} {} {} is {}",
-            first_number, "^", second_number, result
+        Operators::Xor => println!(
+            "The result of {} ^ {} is {}",
+            first_number, second_number, result
         ),
     }
 }
@@ -133,22 +133,22 @@ mod tests {
         assert_eq!(parse_number(number), expected);
     }
 
-    #[test_case("AND", Operators::AND ; "Uppercase AND")]
-    #[test_case("and", Operators::AND ; "Lowercase and")]
-    #[test_case("&", Operators::AND ; "Ampersand")]
-    #[test_case("OR", Operators::OR ; "Uppercase OR")]
-    #[test_case("or", Operators::OR ; "OR")]
-    #[test_case("|", Operators::OR ; "Pipe")]
-    #[test_case("XOR", Operators::XOR ; "Uppercase XOR")]
-    #[test_case("xor", Operators::XOR ; "XOR")]
-    #[test_case("^", Operators::XOR ; "Caret")]
+    #[test_case("AND", Operators::And ; "Uppercase AND")]
+    #[test_case("and", Operators::And ; "Lowercase and")]
+    #[test_case("&", Operators::And ; "Ampersand")]
+    #[test_case("OR", Operators::Or ; "Uppercase OR")]
+    #[test_case("or", Operators::Or ; "OR")]
+    #[test_case("|", Operators::Or ; "Pipe")]
+    #[test_case("XOR", Operators::Xor ; "Uppercase XOR")]
+    #[test_case("xor", Operators::Xor ; "XOR")]
+    #[test_case("^", Operators::Xor ; "Caret")]
     fn test_parse_operation(operator: &str, expected: Operators) {
         assert_eq!(parse_operation(operator).unwrap(), expected);
     }
 
-    #[test_case(2, 27, Operators::AND, 2; "AND")]
-    #[test_case(248, 58, Operators::OR, 250; "OR")]
-    #[test_case(12, 32, Operators::XOR, 44; "XOR")]
+    #[test_case(2, 27, Operators::And, 2; "AND")]
+    #[test_case(248, 58, Operators::Or, 250; "OR")]
+    #[test_case(12, 32, Operators::Xor, 44; "XOR")]
     fn test_calculator(first_number: u32, second_number: u32, operator: Operators, result: u32) {
         assert_eq!(calculator(first_number, second_number, operator), result);
     }

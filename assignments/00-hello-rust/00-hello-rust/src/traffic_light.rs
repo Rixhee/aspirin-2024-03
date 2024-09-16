@@ -45,9 +45,9 @@ fn get_next_state(
     pedestrian_walk_request: bool,
 ) -> TrafficLightColor {
     let time_gap: u32 = current_time_ms - state.last_transition_time_ms;
-    if state.current_color == TrafficLightColor::Yellow && time_gap > 5000 {
-        return get_next_color(state);
-    } else if state.current_color == TrafficLightColor::Red && time_gap > 25000 {
+    if (state.current_color == TrafficLightColor::Yellow && time_gap > 5000)
+        || state.current_color == TrafficLightColor::Red && time_gap > 25000
+    {
         return get_next_color(state);
     } else if state.current_color == TrafficLightColor::Green {
         let threshold = if pedestrian_walk_request {
@@ -60,7 +60,7 @@ fn get_next_state(
         }
     }
 
-    return state.current_color;
+    state.current_color
 }
 
 // Do not modify below here
