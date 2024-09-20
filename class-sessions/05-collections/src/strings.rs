@@ -1,16 +1,26 @@
 #[allow(dead_code)]
 fn merge_strings(arr: Vec<String>) -> String {
-    todo!()
+    arr.into_iter().fold(String::new(), |acc, s| acc + &s)
 }
 
 #[allow(dead_code)]
 fn count_letter(word: String, letter: char) -> u8 {
-    todo!()
+    word.chars().filter(|c| c == &letter).count() as u8
 }
 
 #[allow(dead_code)]
 fn selectively_capitalize(input: String, idx_to_capitalize: Vec<usize>) -> String {
-    todo!()
+    let mut result = String::new();
+    let mut idx = 0;
+    for c in input.chars() {
+        if idx_to_capitalize.contains(&idx) {
+            result.push_str(&c.to_uppercase().to_string());
+        } else {
+            result.push_str(&c.to_string());
+        }
+        idx += 1;
+    }
+    result
 }
 
 // Do not modify below here

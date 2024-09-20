@@ -3,12 +3,51 @@ use std::fs;
 
 #[allow(dead_code)]
 fn get_most_common_words(file_path: &str) -> String {
-    todo!()
+    let content = fs::read_to_string(file_path).expect("Something went wrong reading the file");
+    let mut word_map = HashMap::new();
+    for word in content.split_whitespace() {
+        let _ = *word_map
+            .entry(
+                word.to_lowercase()
+                    .chars()
+                    .filter(|c| c.is_alphanumeric())
+                    .collect::<String>(),
+            )
+            .and_modify(|count| *count += 1)
+            .or_insert(1);
+    }
+
+    let mut max_count = 0;
+    let mut max_count_word = String::from("");
+    for (key, value) in word_map {
+        if value > max_count {
+            max_count = value;
+            max_count_word = key.to_string();
+        }
+    }
+
+    max_count_word
 }
 
 #[allow(dead_code)]
 fn get_unique_characters(input: String) -> Vec<char> {
-    todo!()
+    let mut counts = HashMap::new();
+
+    for char in input.chars() {
+        let _ = *counts
+            .entry(char)
+            .and_modify(|count| *count += 1)
+            .or_insert(1);
+    }
+
+    let mut unique_chars = Vec::new();
+    for (key, value) in counts {
+        if value == 1 {
+            unique_chars.push(key);
+        }
+    }
+
+    unique_chars
 }
 
 // Do not modify below here

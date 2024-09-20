@@ -2,22 +2,57 @@ use std::cmp::Ordering;
 
 #[allow(dead_code)]
 fn get_fibonacci(fibonacci_size: usize) -> Vec<u32> {
-    todo!()
+    let fibonacci: Vec<u32> = (0..fibonacci_size)
+        .scan((0, 1), |state: &mut (u32, u32), _| {
+            let next = (*state).1;
+            *state = ((*state).1, (*state).0 + (*state).1);
+            Some(next)
+        })
+        .collect();
+    fibonacci
 }
 
 #[allow(dead_code)]
 fn binary_search(arr: Vec<u8>, search_val: u8) -> usize {
-    todo!()
+    let mut arr = arr;
+    loop {
+        let mid = arr.len() / 2;
+        match arr[mid].cmp(&search_val) {
+            Ordering::Less => arr = arr[mid + 1..].to_vec(),
+            Ordering::Greater => arr = arr[..mid].to_vec(),
+            Ordering::Equal => return mid,
+        }
+    }
 }
 
 #[allow(dead_code)]
 fn filter_even_numbers(arr: Vec<u8>) -> Vec<u8> {
-    todo!()
+    arr.into_iter().filter(|x| x % 2 != 0).collect()
 }
 
 #[allow(dead_code)]
 fn get_longest_increasing_subsequence_len(arr: Vec<u8>) -> u8 {
-    todo!()
+    let mut max: u8 = 0;
+    let mut count: u8 = 1;
+
+    for index in 0..(arr.len() - 1) {
+        if arr[index] < arr[index + 1] {
+            count += 1;
+            println!("{}", count);
+        } else {
+            if count > max {
+                max = count;
+                println!("{}", max)
+            }
+            count = 1
+        }
+    }
+
+    if count > max {
+        count
+    } else {
+        max
+    }
 }
 
 // Do not modify below here
