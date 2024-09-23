@@ -25,14 +25,14 @@ fn slice_sum(slice: &[i32]) -> i32 {
 
 /// Given a string slice, look for a substring, and return a slice of the first
 /// occurrence of the substring (return None if the substring is not found)
-// fn find_in_string(string: &str, word: &String) -> Option<&str> {
-//     let found = string.find(word);
-//     if found.is_none() {
-//         None
-//     } else {
-//         string[found.unwrap()..string.len()]
-//     }
-// }
+fn find_in_string(string: &str, word: &String) -> Option<&str> {
+    let found = string.find(word);
+    if found.is_none() {
+        None
+    } else {
+        string[found.unwrap()..string.len()]
+    }
+}
 
 // DO NOT MODIFY BELOW THIS LINE
 
@@ -76,12 +76,12 @@ mod tests {
         assert_eq!(slice_sum(&slice), 0);
     }
 
-    // #[test]
-    // fn test_find_in_string() {
-    //     let sentence = "The quick brown fox jumps over the lazy dog";
-    //     let word = String::from("fox");
-    //     let found = find_in_string(sentence, &word);
-    //     drop(word);
-    //     assert_eq!(found, Some("fox"));
-    // }
+    #[test]
+    fn test_find_in_string() {
+        let sentence = "The quick brown fox jumps over the lazy dog";
+        let word = String::from("fox");
+        let found = find_in_string(sentence, &word);
+        drop(word);
+        assert_eq!(found, Some("fox"));
+    }
 }
