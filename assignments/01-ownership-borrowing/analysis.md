@@ -1,0 +1,3 @@
+find_in_string needs more information because we are returning a reference to the string slice and rust doesn't know how long that reference should live. Rust needs to know that the reference should have the same lifetime as that of the string and not the word, otherwise it gets confused because it doesn't know whether the returned reference comes from string or word.
+
+doubly_linked_list doesn't work because each node points to both the next and previous nodes, which leads to multiple nodes having shared ownership. This is because there are two mutable references required, one for "next" and one for "previous" which is not allowed in rust's borrowing rules. A bi-directional graph would face the same issues because there will be multiple mutable references.

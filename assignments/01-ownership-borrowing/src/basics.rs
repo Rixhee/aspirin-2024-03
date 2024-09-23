@@ -1,30 +1,37 @@
+// use std::ops::Index;
+
 /// Take ownership of the passed in string and print it
-fn takes_ownership_and_prints() {
-    todo!();
+fn takes_ownership_and_prints(str: String) {
+    println!("{}", str);
 }
 
 /// Take a string slice and return the first letter, or None in the case
 /// of a blank string
-fn first_letter() {
-    todo!();
+fn first_letter(str: &str) -> Option<&str> {
+    str.get(..1)
 }
 
 type Student = (String, u32);
 
 /// Given a reference to a student, return the student's name
-fn get_name() {
-    todo!();
+fn get_name(student: &Student) -> &String {
+    &student.0
 }
 
 /// Given a slice of i32s, return the sum of the elements
-fn slice_sum() {
-    todo!();
+fn slice_sum(slice: &[i32]) -> i32 {
+    slice.into_iter().sum()
 }
 
 /// Given a string slice, look for a substring, and return a slice of the first
 /// occurrence of the substring (return None if the substring is not found)
-fn find_in_string() {
-    todo!();
+fn find_in_string(string: &str, word: &String) -> Option<&str> {
+    let found = string.find(word);
+    if found.is_none() {
+        None
+    } else {
+        string[found.unwrap()..string.len()]
+    }
 }
 
 // DO NOT MODIFY BELOW THIS LINE
