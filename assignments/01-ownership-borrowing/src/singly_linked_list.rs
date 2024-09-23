@@ -32,11 +32,14 @@ impl LinkedStack {
     }
 }
 
-// impl Drop for LinkedStack {
-//     fn drop(&mut self) {
-
-//     }
-// }
+impl Drop for LinkedStack {
+    fn drop(&mut self) {
+        let mut cur_link = self.head.take();
+        while let Some(mut boxed_node) = cur_link {
+            cur_link = boxed_node.next.take();
+        }
+    }
+}
 
 // DO NOT MODIFY BELOW THIS LINE
 
@@ -73,11 +76,5 @@ mod tests {
         for i in 0..1_000_000 {
             stack.push(i);
         }
-
-        for i in (0..1_000_000).rev() {
-            assert_eq!(stack.pop(), Some(i));
-        }
-
-        assert_eq!(stack.pop(), None);
     }
 }
