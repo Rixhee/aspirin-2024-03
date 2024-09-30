@@ -1,19 +1,98 @@
-fn split_string(string: &str, delimeter: &str) -> Vec<&str> {
-    todo!()
+#[allow(dead_code)]
+fn split_string<'a>(string: &'a str, delimeter: &str) -> Vec<&'a str> {
+    let mut output = Vec::<&str>::new();
+    let mut start_index = 0;
+    let mut end_index;
+
+    while start_index < string.len() {
+        if let Some(index) = string[start_index..].find(delimeter) {
+            end_index = start_index + index;
+            output.push(&string[start_index..end_index]);
+            start_index = end_index + delimeter.len();
+        } else {
+            end_index = string.len();
+            output.push(&string[start_index..end_index]);
+            break;
+        }
+    }
+
+    output
 }
 
 #[derive(PartialEq, Debug)]
-struct Differences {
-    only_in_first: Vec<&str>,
-    only_in_second: Vec<&str>,
+struct Differences<'a> {
+    only_in_first: Vec<&'a str>,
+    only_in_second: Vec<&'a str>,
 }
 
-fn find_differences(first_string: &str, second_string: &str) -> Differences {
-    todo!()
+#[allow(dead_code)]
+fn find_differences<'a>(first_string: &'a str, second_string: &'a str) -> Differences<'a> {
+    let mut output = Differences {
+        only_in_first: Vec::<&str>::new(),
+        only_in_second: Vec::<&str>::new(),
+    };
+
+    for word in first_string.split_whitespace() {
+        if !second_string.contains(word) {
+            output.only_in_first.push(word);
+        }
+    }
+
+    for word in second_string.split_ascii_whitespace() {
+        if !first_string.contains(word) {
+            output.only_in_second.push(word);
+        }
+    }
+
+    output
 }
 
+#[allow(dead_code)]
 fn merge_names(first_name: &str, second_name: &str) -> String {
-    todo!()
+    if first_name.is_empty() && second_name.is_empty() {
+        return String::new();
+    } else if first_name.is_empty() {
+        return second_name.to_string();
+    } else if second_name.is_empty() {
+        return first_name.to_string();
+    }
+
+    let mut output = String::new();
+    let mut first_index = 0;
+    let mut second_index = 0;
+    let first_len = first_name.len();
+    let second_len = second_name.len();
+    let mut is_first_turn = true;
+
+    while first_index < first_len || second_index < second_len {
+        if is_first_turn {
+            let starting_index = first_index;
+            while first_index < first_len {
+                let char = first_name.chars().nth(first_index).unwrap();
+                if "aeiou".contains(char) && first_index != starting_index {
+                    break;
+                }
+                output.push(char);
+                first_index += 1;
+            }
+        } else {
+            let starting_index = second_index;
+            while second_index < second_len {
+                let char = second_name.chars().nth(second_index).unwrap();
+                if "aeiou".contains(char) && second_index != starting_index {
+                    break;
+                }
+                output.push(char);
+                second_index += 1;
+            }
+        }
+        is_first_turn = !is_first_turn;
+    }
+
+    output.push_str(&first_name[first_index..]);
+    output.push_str(&second_name[second_index..]);
+
+    output
 }
 
 #[cfg(test)]
