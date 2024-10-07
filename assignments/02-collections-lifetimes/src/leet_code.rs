@@ -1,23 +1,123 @@
 use std::collections::HashMap;
 
-fn longest_equal_sequence_prescriptive(sequence) -> i32 {
-    todo!()
+#[allow(dead_code)]
+fn longest_equal_sequence_prescriptive<T>(sequence: &[T]) -> i32
+where
+    T: std::cmp::PartialEq,
+{
+    if sequence.is_empty() {
+        return 0;
+    }
+
+    let mut count = 1;
+    let mut previous = &sequence[0];
+    let mut max = 0;
+
+    for num in sequence[1..].iter() {
+        if *num == *previous {
+            count += 1;
+        } else {
+            count = 1;
+        }
+
+        previous = num;
+
+        if count > max {
+            max = count;
+        }
+    }
+
+    std::cmp::max(count, max) as i32
 }
 
-fn longest_equal_sequence_functional(sequence) -> i32 {
-    todo!()
+#[allow(dead_code)]
+fn longest_equal_sequence_functional<T: std::cmp::PartialEq>(sequence: &[T]) -> i32 {
+    if sequence.is_empty() {
+        return 0;
+    }
+
+    let (max_count, _) = sequence[0..sequence.len() - 1]
+        .iter()
+        .zip(sequence[1..sequence.len()].iter())
+        .map(|(first, second)| first == second)
+        .fold((1, 1), |(best, cur), equality| {
+            if equality {
+                (best.max(cur + 1), cur + 1)
+            } else {
+                (best, 1)
+            }
+        });
+
+    max_count
 }
 
+#[allow(dead_code)]
 fn is_valid_paranthesis(paranthesis: &str) -> bool {
-    todo!()
+    let mut stack = Vec::new();
+
+    let mapping = HashMap::from([('(', ')'), ('{', '}'), ('[', ']')]);
+
+    for c in paranthesis.chars() {
+        match c {
+            '(' | '{' | '[' => stack.push(c),
+            ')' | '}' | ']' => {
+                if stack.is_empty() {
+                    return false;
+                } else {
+                    let top = stack.pop().unwrap();
+                    if mapping[&top] != c {
+                        return false;
+                    }
+                }
+            }
+            _ => unreachable!(),
+        }
+    }
+
+    stack.is_empty()
 }
 
-fn longest_common_substring<(first_str: &str, second_str: &str) -> &str {
-    todo!()
+#[allow(dead_code)]
+fn longest_common_substring<'a>(first_str: &'a str, second_str: &'a str) -> &'a str {
+    let mut max_length = 0;
+    let mut max_substring = "";
+    for start in 0..first_str.len() {
+        for end in start..first_str.len() {
+            let substring = &first_str[start..end + 1];
+            if second_str.contains(substring) && substring.len() > max_length {
+                max_length = substring.len();
+                max_substring = substring;
+            }
+        }
+    }
+
+    max_substring
 }
 
-fn longest_common_substring_multiple(strings: &[&str]) -> &str {
-    todo!()
+#[allow(dead_code)]
+fn longest_common_substring_multiple<'a>(strings: &[&'a str]) -> &'a str {
+    let mut counts: HashMap<&str, i32> = HashMap::new();
+
+    for i in 0..strings.len() {
+        for j in (i + 1)..strings.len() {
+            let substring = longest_common_substring(strings[i], strings[j]);
+            counts
+                .entry(substring)
+                .and_modify(|count| *count += 1)
+                .or_insert(2);
+        }
+    }
+
+    let mut max_count = 0;
+    let mut max_substring = "";
+    for (substring, count) in counts {
+        if count > max_count {
+            max_count = count;
+            max_substring = substring;
+        }
+    }
+
+    max_substring
 }
 
 #[cfg(test)]

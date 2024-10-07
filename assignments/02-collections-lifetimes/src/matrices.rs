@@ -5,19 +5,57 @@ pub enum MatrixError {
     InvalidShape,
 }
 
-fn dot_product_prescriptive(vec1: &Vec<f64>, vec2: &Vec<f64>) -> Result<f64, MatrixError> {
-    todo!()
+#[allow(dead_code)]
+fn dot_product_prescriptive(vec1: &[f64], vec2: &[f64]) -> Result<f64, MatrixError> {
+    let mut sum: f64 = 0.0;
+    if vec1.is_empty() || vec2.is_empty() {
+        return Err(MatrixError::EmptyVector);
+    } else if vec1.len() != vec2.len() {
+        return Err(MatrixError::DimensionMismatch);
+    } else {
+        for i in 0..vec1.len() {
+            sum += vec1[i] * vec2[i];
+        }
+    }
+
+    Ok(sum)
 }
 
-fn dot_product_functional(vec1: &Vec<f64>, vec2: &Vec<f64>) -> Result<f64, MatrixError> {
-    todo!()
+#[allow(dead_code)]
+fn dot_product_functional(vec1: &[f64], vec2: &[f64]) -> Result<f64, MatrixError> {
+    if vec1.is_empty() || vec2.is_empty() {
+        Err(MatrixError::EmptyVector)
+    } else if vec1.len() != vec2.len() {
+        Err(MatrixError::DimensionMismatch)
+    } else {
+        vec1.iter()
+            .zip(vec2)
+            .try_fold(0.0, |acc, (x, y)| Ok(acc + x * y))
+    }
 }
 
-fn multiply_matrices(
-    vec1: &Vec<Vec<f64>>,
-    vec2: &Vec<Vec<f64>>,
-) -> Result<Vec<Vec<f64>>, MatrixError> {
-    todo!()
+#[allow(dead_code)]
+fn multiply_matrices(vec1: &[Vec<f64>], vec2: &[Vec<f64>]) -> Result<Vec<Vec<f64>>, MatrixError> {
+    if vec1.is_empty() || vec2.is_empty() {
+        return Err(MatrixError::EmptyVector);
+    } else if vec1.iter().any(|row| row.len() != vec1[0].len())
+        || vec2.iter().any(|row| row.len() != vec2[0].len())
+    {
+        return Err(MatrixError::InvalidShape);
+    } else if vec1[0].len() != vec2.len() {
+        return Err(MatrixError::DimensionMismatch);
+    }
+    let mut output = vec![vec![0.0; vec2[0].len()]; vec1.len()];
+
+    for row in 0..vec1.len() {
+        for column in 0..vec2[0].len() {
+            for (element, _) in vec2.iter().enumerate() {
+                output[row][column] += vec1[row][element] * vec2[element][column]
+            }
+        }
+    }
+
+    Ok(output)
 }
 
 #[cfg(test)]
