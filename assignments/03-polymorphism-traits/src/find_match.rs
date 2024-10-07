@@ -77,7 +77,7 @@ impl SearchNeedle for RegexNeedle {
 }
 
 pub fn filter_lines<'a>(
-    needle: String,
+    needle: &String,
     lines: Box<dyn Iterator<Item = String> + 'a>,
     ignore_case: bool,
     invert_match: bool,
@@ -85,7 +85,7 @@ pub fn filter_lines<'a>(
     let processed_needle = if ignore_case {
         needle.to_lowercase()
     } else {
-        needle
+        needle.to_string()
     };
 
     if let Ok(re) = Regex::new(&processed_needle) {
@@ -122,7 +122,7 @@ mod tests {
     #[test]
     fn test_string_needle_case_sensitive() {
         let needle = "quick".to_string();
-        let result = filter_lines(needle, get_test_lines(), false, false).unwrap();
+        let result = filter_lines(&needle, get_test_lines(), false, false).unwrap();
         let matched: Vec<String> = result.collect();
 
         assert_eq!(matched, vec!["The quick brown fox"]);
@@ -132,7 +132,7 @@ mod tests {
     #[test]
     fn test_string_needle_case_insensitive() {
         let needle = "hello".to_string();
-        let result = filter_lines(needle, get_test_lines(), true, false).unwrap();
+        let result = filter_lines(&needle, get_test_lines(), true, false).unwrap();
         let matched: Vec<String> = result.collect();
 
         assert_eq!(matched, vec!["HELLO WORLD"]);
@@ -142,7 +142,7 @@ mod tests {
     #[test]
     fn test_string_needle_inverted_match() {
         let needle = "dog".to_string();
-        let result = filter_lines(needle, get_test_lines(), false, true).unwrap();
+        let result = filter_lines(&needle, get_test_lines(), false, true).unwrap();
         let matched: Vec<String> = result.collect();
 
         assert_eq!(
@@ -160,7 +160,7 @@ mod tests {
     #[test]
     fn test_regex_needle_match() {
         let needle = r"\bquick\b".to_string(); // Word boundary regex for "quick"
-        let result = filter_lines(needle, get_test_lines(), false, false).unwrap();
+        let result = filter_lines(&needle, get_test_lines(), false, false).unwrap();
         let matched: Vec<String> = result.collect();
 
         assert_eq!(matched, vec!["The quick brown fox"]);
@@ -170,7 +170,7 @@ mod tests {
     #[test]
     fn test_regex_needle_inverted_match() {
         let needle = r"\bWORLD\b".to_string(); // Word boundary regex for "WORLD"
-        let result = filter_lines(needle, get_test_lines(), false, true).unwrap();
+        let result = filter_lines(&needle, get_test_lines(), false, true).unwrap();
         let matched: Vec<String> = result.collect();
 
         assert_eq!(
@@ -188,7 +188,7 @@ mod tests {
     #[test]
     fn test_regex_needle_different_lines() {
         let needle = r"rust".to_string();
-        let result = filter_lines(needle, get_test_lines(), false, false).unwrap();
+        let result = filter_lines(&needle, get_test_lines(), false, false).unwrap();
         let matched: Vec<String> = result.collect();
 
         assert_eq!(matched, vec!["rust is awesome"]);
@@ -198,7 +198,7 @@ mod tests {
     #[test]
     fn test_empty_needle() {
         let needle = "".to_string(); // Empty string as needle
-        let result = filter_lines(needle, get_test_lines(), false, false).unwrap();
+        let result = filter_lines(&needle, get_test_lines(), false, false).unwrap();
         let matched: Vec<String> = result.collect();
 
         // All the lines should match an empty string

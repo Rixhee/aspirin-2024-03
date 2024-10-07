@@ -4,6 +4,7 @@ use std::io::Write;
 
 struct ColoredString {
     string: String,
+    needle: String,
 }
 
 struct PlainString {
@@ -14,11 +15,29 @@ pub trait WriteOutput {
     fn write_output(&self, writer: &mut dyn Write, color: Option<Color>) -> Result<()>;
 }
 
+fn split_at_substring<'a>(haystack: &'a str, needle: &str) -> Option<(&'a str, &'a str)> {
+    if !needle.is_empty() {
+        if let Some(pos) = haystack.find(needle) {
+            let (prefix, suffix) = haystack.split_at(pos);
+            let suffix = &suffix[needle.len()..];
+            Some((prefix, suffix))
+        } else {
+            None
+        }
+    } else {
+        None
+    }
+}
+
 impl WriteOutput for ColoredString {
     fn write_output(&self, writer: &mut dyn Write, color: Option<Color>) -> Result<()> {
-        // If color is provided, then print colored string
         if let Some(c) = color {
-            writeln!(writer, "{}", self.string.color(c))?;
+            if let Some((prefix, suffix)) = split_at_substring(&self.string, &self.needle) {
+                writeln!(writer, "{}{}{}", prefix, self.needle.color(c), suffix)?;
+            } else {
+                // No match found, print entire line as plain text
+                writeln!(writer, "{}", self.string)?;
+            }
         } else {
             writeln!(writer, "{}", self.string)?;
         }
@@ -36,14 +55,21 @@ impl WriteOutput for PlainString {
 pub fn colored_output(
     lines: Box<dyn Iterator<Item = String>>,
     writer: &mut dyn Write,
+    needle: String,
     color: Option<Color>,
 ) -> Result<()> {
-    // Run line by line and print colored string or plain statement according to the argument
     for line in lines {
         if color.is_some() {
-            ColoredString { string: line }.write_output(writer, color)?;
+            ColoredString {
+                string: line.clone(),
+                needle: needle.to_string(),
+            }
+            .write_output(writer, color)?;
         } else {
-            PlainString { string: line }.write_output(writer, None)?;
+            PlainString {
+                string: line.clone(),
+            }
+            .write_output(writer, None)?;
         }
     }
     Ok(())
@@ -52,169 +78,160 @@ pub fn colored_output(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use colored::Colorize;
     use std::io::Cursor;
 
-    // Test for writing colored output when color is provided
+    // Tests for the split_at_substring function
+    #[test]
+    fn test_split_at_substring_found() {
+        let haystack = "Hello, world!";
+        let needle = "world";
+        let result = split_at_substring(haystack, needle);
+        assert_eq!(result, Some(("Hello, ", "!")));
+    }
+
+    #[test]
+    fn test_split_at_substring_not_found() {
+        let haystack = "Hello, world!";
+        let needle = "planet";
+        let result = split_at_substring(haystack, needle);
+        assert_eq!(result, None);
+    }
+
+    #[test]
+    fn test_split_at_substring_empty_needle() {
+        let haystack = "Hello, world!";
+        let needle = "";
+        let result = split_at_substring(haystack, needle);
+        assert_eq!(result, None); // Expecting None since empty needle should not match
+    }
+
+    // Test for ColoredString with a matching substring and color
     #[test]
     fn test_colored_string_with_color() {
         let mut output = Cursor::new(Vec::new());
         let colored_string = ColoredString {
-            string: "Colored text".to_string(),
+            string: "Test string with match".to_string(),
+            needle: "match".to_string(),
         };
         colored_string
             .write_output(&mut output, Some(Color::Red))
             .unwrap();
 
         let written = String::from_utf8(output.into_inner()).unwrap();
-        assert!(written.contains("Colored text"));
+        assert_eq!(written, format!("Test string with {}\n", "match".red()));
     }
 
-    // Test for writing colored output when no color is provided (should fallback to uncolored)
+    // Test for ColoredString with no color (plain text output)
     #[test]
     fn test_colored_string_without_color() {
         let mut output = Cursor::new(Vec::new());
         let colored_string = ColoredString {
-            string: "Uncolored fallback".to_string(),
+            string: "Test string without color".to_string(),
+            needle: "color".to_string(),
         };
         colored_string.write_output(&mut output, None).unwrap();
 
         let written = String::from_utf8(output.into_inner()).unwrap();
-        assert_eq!(written, "Uncolored fallback\n");
+        assert_eq!(written, "Test string without color\n");
     }
 
-    // Test for writing plain output with a string, no color should affect this
+    // Test for ColoredString when the needle is not found (no color applied)
     #[test]
-    fn test_plain_string_output() {
+    fn test_colored_string_no_match() {
         let mut output = Cursor::new(Vec::new());
-        let plain_string = PlainString {
-            string: "Plain uncolored string".to_string(),
+        let colored_string = ColoredString {
+            string: "No match in this string".to_string(),
+            needle: "absent".to_string(),
         };
-        plain_string.write_output(&mut output, None).unwrap();
-
-        let written = String::from_utf8(output.into_inner()).unwrap();
-        assert_eq!(written, "Plain uncolored string\n");
-    }
-
-    // Test for PlainString ignoring the color argument and always writing uncolored
-    #[test]
-    fn test_plain_string_ignores_color() {
-        let mut output = Cursor::new(Vec::new());
-        let plain_string = PlainString {
-            string: "Always uncolored".to_string(),
-        };
-        plain_string
+        colored_string
             .write_output(&mut output, Some(Color::Blue))
             .unwrap();
 
         let written = String::from_utf8(output.into_inner()).unwrap();
-        assert_eq!(written, "Always uncolored\n");
+        assert_eq!(written, "No match in this string\n");
     }
 
-    // Test for colored_output with lines and a valid color
+    // Test for PlainString output (always plain text)
+    #[test]
+    fn test_plain_string_output() {
+        let mut output = Cursor::new(Vec::new());
+        let plain_string = PlainString {
+            string: "Plain string".to_string(),
+        };
+        plain_string.write_output(&mut output, None).unwrap();
+
+        let written = String::from_utf8(output.into_inner()).unwrap();
+        assert_eq!(written, "Plain string\n");
+    }
+
+    // Test for colored_output function with color and matching needle
     #[test]
     fn test_colored_output_with_color() {
         let lines =
-            Box::new(vec!["Colored Line 1".to_string(), "Colored Line 2".to_string()].into_iter());
+            Box::new(vec!["First match here".to_string(), "Another match".to_string()].into_iter());
         let mut output = Cursor::new(Vec::new());
 
-        colored_output(lines, &mut output, Some(Color::Green)).unwrap();
+        colored_output(lines, &mut output, "match".to_string(), Some(Color::Yellow)).unwrap();
 
         let written = String::from_utf8(output.into_inner()).unwrap();
-        assert!(written.contains("Colored Line 1"));
-        assert!(written.contains("Colored Line 2"));
+        assert!(written.contains("First "));
+        assert!(written.contains(&"match".yellow().to_string()));
+        assert!(written.contains("Another "));
+        assert!(written.contains(&"match".yellow().to_string()));
     }
 
-    // Test for colored_output without color (should print plain)
+    // Test for colored_output function without color (plain output)
     #[test]
     fn test_colored_output_without_color() {
-        let lines = Box::new(
-            vec![
-                "Uncolored Line 1".to_string(),
-                "Uncolored Line 2".to_string(),
-            ]
-            .into_iter(),
-        );
+        let lines = Box::new(vec!["Line one".to_string(), "Line two".to_string()].into_iter());
         let mut output = Cursor::new(Vec::new());
 
-        colored_output(lines, &mut output, None).unwrap();
+        colored_output(lines, &mut output, "needle".to_string(), None).unwrap();
 
         let written = String::from_utf8(output.into_inner()).unwrap();
-        assert_eq!(written, "Uncolored Line 1\nUncolored Line 2\n");
+        assert_eq!(written, "Line one\nLine two\n");
     }
 
-    // Test for mixed scenario: some lines colored, some uncolored
+    // Test for colored_output function with an empty iterator (no lines)
     #[test]
-    fn test_mixed_output_with_some_colored_lines() {
-        let lines =
-            Box::new(vec!["Colored Line".to_string(), "Uncolored Line".to_string()].into_iter());
-        let mut output = Cursor::new(Vec::new());
-
-        // First line with color, second line without color
-        colored_output(lines, &mut output, Some(Color::Yellow)).unwrap();
-
-        let written = String::from_utf8(output.into_inner()).unwrap();
-        assert!(written.contains("Colored Line"));
-        assert!(written.contains("Uncolored Line"));
-    }
-
-    // Test for empty iterator input (no lines)
-    #[test]
-    fn test_empty_lines_input() {
+    fn test_colored_output_empty() {
         let lines = Box::new(Vec::<String>::new().into_iter()); // Empty iterator
         let mut output = Cursor::new(Vec::new());
 
-        let result = colored_output(lines, &mut output, Some(Color::Magenta));
-        assert!(result.is_ok());
+        colored_output(
+            lines,
+            &mut output,
+            "match".to_string(),
+            Some(Color::Magenta),
+        )
+        .unwrap();
 
         let written = String::from_utf8(output.into_inner()).unwrap();
-        assert_eq!(written, ""); // Output should be empty
+        assert_eq!(written, ""); // Should be empty output
     }
 
-    // Test for handling special characters or escape sequences in lines
+    // Test for colored_output when the needle is not found in any line
     #[test]
-    fn test_special_characters_in_lines() {
+    fn test_colored_output_no_match() {
         let lines = Box::new(
             vec![
-                "Line with \n new line".to_string(),
-                "Tab \t in line".to_string(),
+                "This is a line".to_string(),
+                "This is another line".to_string(),
             ]
             .into_iter(),
         );
         let mut output = Cursor::new(Vec::new());
 
-        colored_output(lines, &mut output, None).unwrap();
+        colored_output(
+            lines,
+            &mut output,
+            "nonexistent".to_string(),
+            Some(Color::Red),
+        )
+        .unwrap();
 
         let written = String::from_utf8(output.into_inner()).unwrap();
-        assert!(written.contains("Line with \n new line"));
-        assert!(written.contains("Tab \t in line"));
-    }
-
-    // Test for multiple colors across different lines
-    #[test]
-    fn test_different_colors_per_line() {
-        let mut output = Cursor::new(Vec::new());
-
-        // We'll simulate changing colors between the lines manually
-        let mut is_first = true;
-        for line in vec!["Line 1", "Line 2"] {
-            if is_first {
-                ColoredString {
-                    string: line.to_string(),
-                }
-                .write_output(&mut output, Some(Color::Blue))
-                .unwrap();
-                is_first = false;
-            } else {
-                ColoredString {
-                    string: line.to_string(),
-                }
-                .write_output(&mut output, Some(Color::Red))
-                .unwrap();
-            }
-        }
-
-        let written = String::from_utf8(output.into_inner()).unwrap();
-        assert!(written.contains("Line 1"));
-        assert!(written.contains("Line 2"));
+        assert_eq!(written, "This is a line\nThis is another line\n");
     }
 }

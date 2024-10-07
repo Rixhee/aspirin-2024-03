@@ -36,8 +36,8 @@ fn main() -> Result<()> {
     println!("{:?}", args);
 
     let lines = get_lines_from_input(args.file)?;
-    let filter_lines = filter_lines(args.needle, lines, args.ignore_case, args.invert_match)?;
-    let _ = colored_output(filter_lines, &mut stdout(), args.color);
+    let filter_lines = filter_lines(&args.needle, lines, args.ignore_case, args.invert_match)?;
+    let _ = colored_output(filter_lines, &mut stdout(), args.needle, args.color);
 
     Ok(())
 }
