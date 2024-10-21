@@ -77,11 +77,11 @@ trait Add {
     fn add(&self) -> Result<Value, MyErrors>;
 }
 
-pub struct StringArray {
+struct StringArray {
     arr: Vec<String>,
 }
 
-pub struct IntArray {
+struct IntArray {
     arr: Vec<i64>,
 }
 
