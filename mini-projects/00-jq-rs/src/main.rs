@@ -1,4 +1,4 @@
-use anyhow::Result;
+use anyhow::{Context, Result};
 use clap::Parser;
 use serde_json::Value;
 use std::{
@@ -59,9 +59,8 @@ struct Args {
 }
 
 pub fn file_path(path: PathBuf) -> Result<Value> {
-    let file = std::fs::File::open(&path).unwrap();
-    // let file =
-    //     std::fs::File::open(&path).with_context(|| format!("Failed to open file: {:?}", path))?;
+    let file =
+        std::fs::File::open(&path).with_context(|| format!("Failed to open file: {:?}", path))?;
     let reader = BufReader::new(file);
     let json_value: Value = serde_json::from_reader(reader)?;
 
