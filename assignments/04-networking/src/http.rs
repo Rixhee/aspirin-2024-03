@@ -16,11 +16,28 @@ pub struct HttpRequest {
 }
 
 impl FromStr for HttpRequest {
-    type Err = String;
-
+    type Err = AspirinEatsError;
     // Parse a string into an HTTP Request
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        todo!()
+        let mut split_string = s.split(" ");
+        let method = split_string
+            .next()
+            .ok_or(AspirinEatsError::InvalidRequest)?
+            .to_string();
+        let path = split_string
+            .next()
+            .ok_or(AspirinEatsError::InvalidRequest)?
+            .to_string();
+        let body = s
+            .split("\r\n\r\n")
+            .last()
+            .ok_or(AspirinEatsError::InvalidRequest)?
+            .to_string();
+        Ok(Self {
+            method: Some(method),
+            path: Some(path),
+            body: Some(body),
+        })
     }
 }
 
@@ -43,14 +60,27 @@ impl HttpResponse {
 impl Display for HttpResponse {
     /// Convert an HttpResponse struct to a valid HTTP Response
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        todo!()
+        f.write_str(&format!(
+            "HTTP/1.1 {} {}\r\n\r\n{}",
+            self.status_code, self.status_text, self.body
+        ))?;
+        Ok(())
     }
 }
 
 impl From<AspirinEatsError> for HttpResponse {
     /// Given an error type, convert it to an appropriate HTTP Response
     fn from(value: AspirinEatsError) -> Self {
-        todo!()
+        match value {
+            AspirinEatsError::InvalidRequest => {
+                HttpResponse::new(400, "Bad Request", "Invalid Request")
+            }
+            AspirinEatsError::NotFound => HttpResponse::new(404, "Not Found", "Resource not found"),
+            AspirinEatsError::MethodNotAllowed => {
+                HttpResponse::new(405, "Method Not Allowed", "Method not allowed")
+            }
+            _ => HttpResponse::new(500, "Internal Server Error", "Internal Server Error"),
+        }
     }
 }
 
