@@ -61,7 +61,7 @@ impl Display for HttpResponse {
     /// Convert an HttpResponse struct to a valid HTTP Response
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.write_str(&format!(
-            "HTTP/1.1 {} {}\r\n\r\n{}",
+            "HTTP/1.1 {} {}\r\n\r\n{}\r\n",
             self.status_code, self.status_text, self.body
         ))?;
         Ok(())
@@ -102,7 +102,7 @@ mod tests {
         let response = HttpResponse::new(200, "OK", "Welcome to Aspirin Eats!");
         assert_eq!(
             response.to_string(),
-            "HTTP/1.1 200 OK\r\n\r\nWelcome to Aspirin Eats!"
+            "HTTP/1.1 200 OK\r\n\r\nWelcome to Aspirin Eats!\r\n"
         );
     }
 
