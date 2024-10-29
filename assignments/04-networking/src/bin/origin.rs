@@ -13,7 +13,7 @@ use std::{
 const DB_PATH: &str = "/Users/rishitbansal/Downloads/aspirin_eats.db";
 
 fn handle_connection(mut stream: TcpStream, db: &AspirinEatsDb) {
-    let mut buffer = [0; 1024];
+    let mut buffer = [0; 65536];
 
     let bytes_read = stream
         .read(&mut buffer)
@@ -27,6 +27,11 @@ fn handle_connection(mut stream: TcpStream, db: &AspirinEatsDb) {
             return;
         }
     };
+
+    if request_str.is_empty() {
+        eprintln!("Failed to parse empty request");
+        return;
+    }
 
     let request = match HttpRequest::from_str(request_str) {
         Ok(req) => req,
