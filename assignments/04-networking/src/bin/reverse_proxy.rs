@@ -60,6 +60,7 @@ struct MockStream {
     cursor: usize,
 }
 
+#[allow(dead_code)]
 impl MockStream {
     fn new(data: Vec<u8>) -> Self {
         MockStream { data, cursor: 0 }

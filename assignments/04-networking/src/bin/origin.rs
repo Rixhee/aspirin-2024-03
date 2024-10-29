@@ -46,15 +46,15 @@ fn handle_connection(mut stream: TcpStream, db: &AspirinEatsDb) {
             HttpResponse::new(200, "OK", "Welcome to Aspirin Eats!")
         } else {
             match request.method.as_deref() {
-                Some("GET") => match get_request(&request, &db) {
+                Some("GET") => match get_request(&request, db) {
                     Ok(body) => HttpResponse::new(200, "OK", &body),
                     Err(e) => HttpResponse::from(e),
                 },
-                Some("POST") => match post_request(&request, &db) {
+                Some("POST") => match post_request(&request, db) {
                     Ok(()) => HttpResponse::new(200, "OK", "OK"),
                     Err(e) => HttpResponse::from(e),
                 },
-                Some("DELETE") => match delete_request(&request, &db) {
+                Some("DELETE") => match delete_request(&request, db) {
                     Ok(()) => HttpResponse::new(200, "OK", "OK"),
                     Err(e) => HttpResponse::from(e),
                 },
@@ -121,7 +121,7 @@ fn delete_request(request: &HttpRequest, db: &AspirinEatsDb) -> Result<(), Aspir
     match request.path.as_deref() {
         Some("/orders") => {
             db.reset_orders().map_err(AspirinEatsError::Database)?;
-            return Ok(());
+            Ok(())
         }
 
         Some(path) if path.starts_with("/orders/") => {
@@ -130,20 +130,18 @@ fn delete_request(request: &HttpRequest, db: &AspirinEatsDb) -> Result<(), Aspir
                     Ok(id) => match db.get_order(id) {
                         Ok(_) => {
                             db.remove_order(id).map_err(AspirinEatsError::Database)?;
-                            return Ok(());
+                            Ok(())
                         }
-                        Err(_) => {
-                            return Err(AspirinEatsError::NotFound);
-                        }
+                        Err(_) => Err(AspirinEatsError::NotFound),
                     },
-                    Err(_) => return Err(AspirinEatsError::InvalidRequest),
+                    Err(_) => Err(AspirinEatsError::InvalidRequest),
                 }
             } else {
-                return Err(AspirinEatsError::InvalidRequest);
+                Err(AspirinEatsError::InvalidRequest)
             }
         }
 
-        _ => return Err(AspirinEatsError::NotFound),
+        _ => Err(AspirinEatsError::NotFound),
     }
 }
 
